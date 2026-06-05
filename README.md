@@ -1,6 +1,6 @@
 # try-coinbase
 
-Coinbase Payment Acceptance demo — embedded `<coinbase-payment>` checkout with a small Express backend.
+Coinbase Payment Acceptance demo — hosted checkout in an iframe with a small Express backend.
 
 ## Prerequisites
 
@@ -57,9 +57,9 @@ Vite proxies `/api/*` to the Express server, so the CDP secret key never reaches
 
 ## How it works
 
-1. Browser calls `POST /api/checkout`
-2. Server creates a CDP payment session via `POST /v2/payment-sessions`
-3. Frontend loads the Coinbase payment widget and calls `render({ paymentSessionId })`
+1. Browser calls `POST /api/checkout` with the page origin for redirect URLs
+2. Server creates a CDP payment session via `POST /v2/payment-sessions` and returns the hosted `paymentUrl`
+3. Frontend loads the hosted checkout page in an iframe; success/failure is handled via redirect to `/checkout-callback.html`
 
 ## Using CDP Docs with MCP (AI assistants)
 
@@ -96,7 +96,7 @@ What MCP tools do you have available?
 You should see CDP documentation search tools. Then try:
 
 ```
-Search the CDP docs for coinbase-payment embedded checkout
+Search the CDP docs for hosted checkout iframe redirect flow
 ```
 
 ### 3. Documentation index for AI tools
@@ -122,8 +122,8 @@ npx skills add .
 Example prompts for this project:
 
 ```
-How do I create a payment session for embedded checkout?
-What events does the coinbase-payment web component emit?
+How do I create a payment session with redirect URLs for hosted checkout?
+What iframe permissions are needed for Coinbase checkout?
 How do I get a merchant settlement account ID for Payment Acceptance?
 ```
 
@@ -135,6 +135,6 @@ How do I get a merchant settlement account ID for Payment Acceptance?
 ## Docs
 
 - [Payment Acceptance overview](https://docs.cdp.coinbase.com/payments/payment-acceptance/overview)
-- [Embedded checkout (`<coinbase-payment>`)](https://docs.cdp.coinbase.com/api-reference/payment-acceptance/payments/embedded-checkout)
+- [Checkout (hosted + embedded)](https://docs.cdp.coinbase.com/api-reference/payment-acceptance/payments/embedded-checkout)
 - [Sandbox accounts](https://docs.cdp.coinbase.com/api-reference/payment-apis/sandbox/guides/accounts)
 - [CDP documentation index (llms.txt)](https://docs.cdp.coinbase.com/llms.txt)
