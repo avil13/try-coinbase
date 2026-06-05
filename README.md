@@ -41,7 +41,31 @@ cdpcurl -k $CDP_API_KEY \
 
 ## Run
 
-Start the backend and frontend in **two terminals**:
+### Quick start (one terminal)
+
+After setup, start both the backend and frontend with:
+
+```bash
+./run.sh
+```
+
+The script:
+
+1. Checks that `cdp_api_key.json` exists (or `CDP_API_KEY` points to your key file)
+2. Starts the Express API on [http://localhost:3001](http://localhost:3001) in the background
+3. Starts the Vite dev server on [http://localhost:5173](http://localhost:5173) in the foreground
+
+Open [http://localhost:5173](http://localhost:5173) and click **Pay $10.00**. Press `Ctrl+C` to stop — the script also shuts down the backend.
+
+If the script is not executable:
+
+```bash
+chmod +x run.sh
+```
+
+### Manual start (two terminals)
+
+Alternatively, run each process separately:
 
 ```bash
 # Terminal 1 — Express API on http://localhost:3001
@@ -50,8 +74,6 @@ npm run dev:server
 # Terminal 2 — Vite dev server on http://localhost:5173
 npm run dev
 ```
-
-Open [http://localhost:5173](http://localhost:5173) and click **Pay $10.00**.
 
 Vite proxies `/api/*` to the Express server, so the CDP secret key never reaches the browser.
 

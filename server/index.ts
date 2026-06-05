@@ -23,15 +23,13 @@ app.options('/api/checkout', (_req, res) => {
  * The CDP secret key never leaves the server.
  */
 app.post('/api/checkout', async (req, res) => {
-  const { amount = '10.00', currency = 'usdc', origin = 'http://localhost:5173' } =
-    req.body as {
-      amount?: string
-      currency?: string
-      origin?: string
-    }
+  const { amount = '10.00', currency = 'usdc' } = req.body as {
+    amount?: string
+    currency?: string
+  }
 
   try {
-    const result = await createPaymentSession(amount, currency, origin)
+    const result = await createPaymentSession(amount, currency)
     res.status(201).json(result)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'

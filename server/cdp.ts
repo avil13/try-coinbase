@@ -53,12 +53,6 @@ async function buildJWT(requestHost: string, requestPath: string): Promise<strin
 
 export interface PaymentSessionResult {
   paymentSessionId: string
-  paymentUrl: string
-}
-
-function checkoutCallbackUrl(origin: string, status: 'success' | 'failure'): string {
-  const base = origin.replace(/\/$/, '')
-  return `${base}/checkout-callback.html?status=${status}`
 }
 
 /**
@@ -68,7 +62,6 @@ function checkoutCallbackUrl(origin: string, status: 'success' | 'failure'): str
 export async function createPaymentSession(
   amount: string,
   currency: string,
-  origin: string,
 ): Promise<PaymentSessionResult> {
   const baseUrl = process.env.CDP_BASE_URL ?? 'https://sandbox.cdp.coinbase.com'
   const merchantAccountId = loadEnv('CDP_MERCHANT_ACCOUNT_ID')
@@ -84,10 +77,6 @@ export async function createPaymentSession(
     asset: currency.toLowerCase(),
     target: { accountId: merchantAccountId, asset: settlementAsset },
     autoCapture: true,
-    redirect: {
-      successUrl: checkoutCallbackUrl(origin, 'success'),
-      failureUrl: checkoutCallbackUrl(origin, 'failure'),
-    },
   }
 
   const response = await fetch(url, {
@@ -106,12 +95,12 @@ export async function createPaymentSession(
 
     try {
       const err = JSON.parse(text) as { errorMessage?: string }
-      // if (err.errorMessage?.includes('entity is not configured for payment acceptance')) {
-      //   message =
-      //     'Payment Acceptance is not enabled for your CDP entity. Request access at https://docs.cdp.coinbase.com/payments/payment-acceptance/overview'
-      // } else if (err.errorMessage) {
-      //   message = `CDP API error: ${err.errorMessage}`
-      // }
+      if (err.errorMessage?.includes('entity is not configured for payment acceptance')) {
+        message =
+          'Payment Acceptance is not enabled for your CDP entity. Request access at https://docs.cdp.coinbase.com/payments/payment-acceptance/overview'
+      } else if (err.errorMessage) {
+        message = `CDP API error: ${err.errorMessage}`
+      }
     } catch {
       // Keep raw message when body is not JSON.
     }
@@ -119,17 +108,6 @@ export async function createPaymentSession(
     throw new Error(message)
   }
 
-  const data = (await response.json()) as {
-    id: string
-    paymentSessionId?: string
-    url?: string
-  }
-
-  const paymentSessionId = data.paymentSessionId ?? data.id
-  const paymentUrl = data.url
-  if (!paymentUrl) {
-    throw new Error('CDP API did not return a hosted checkout URL')
-  }
-
-  return { paymentSessionId, paymentUrl }
+  const data = (await response.json()) as { id: string; paymentSessionId?: string }
+  return { paymentSessionId: data.paymentSessionId ?? data.id }
 }

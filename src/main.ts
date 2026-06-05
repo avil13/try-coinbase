@@ -1,5 +1,5 @@
 import './style.css'
-import { mountCheckoutIframe } from './payments/iframe.ts'
+import { renderWidget } from './payments/widget.ts'
 
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <section id="center">
@@ -14,11 +14,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         <span>Complete your payment</span>
         <button id="checkout-close" type="button" aria-label="Close">&times;</button>
       </div>
-      <iframe
-        id="checkout-iframe"
-        title="Coinbase checkout"
-        allow="publickey-credentials-get; publickey-credentials-create; clipboard-write"
-      ></iframe>
+      <coinbase-payment id="coinbase-payment" layout="single-column"></coinbase-payment>
     </div>
   </section>
 `
@@ -27,9 +23,6 @@ const payBtn = document.querySelector<HTMLButtonElement>('#pay-btn')!
 const errorEl = document.querySelector<HTMLParagraphElement>('#pay-error')!
 const panel = document.querySelector<HTMLDivElement>('#checkout-panel')!
 const closeBtn = document.querySelector<HTMLButtonElement>('#checkout-close')!
-const iframe = document.querySelector<HTMLIFrameElement>('#checkout-iframe')!
-
-let unmountCheckout: (() => void) | null = null
 
 function showError(message: string) {
   errorEl.textContent = message
@@ -46,8 +39,6 @@ function openPanel() {
 }
 
 function closePanel() {
-  unmountCheckout?.()
-  unmountCheckout = null
   panel.hidden = true
 }
 
@@ -69,11 +60,7 @@ payBtn.addEventListener('click', async () => {
     const response = await fetch('/api/checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        amount: '10.00',
-        currency: 'usdc',
-        origin: window.location.origin,
-      }),
+      body: JSON.stringify({ amount: '10.00', currency: 'usdc' }),
     })
 
     if (!response.ok) {
@@ -86,20 +73,27 @@ payBtn.addEventListener('click', async () => {
       throw new Error(data.error ?? `Server error ${response.status}`)
     }
 
-    const { paymentUrl } = (await response.json()) as { paymentUrl: string }
+    const { paymentSessionId } = (await response.json()) as { paymentSessionId: string }
 
     openPanel()
 
-    unmountCheckout = mountCheckoutIframe(paymentUrl, iframe, {
+    await renderWidget(paymentSessionId, {
       onSuccess() {
         closePanel()
         payBtn.textContent = 'Payment successful!'
         payBtn.disabled = true
       },
-      onFailure() {
+      onFailure(status) {
         closePanel()
-        showError('Payment failed. Please try again.')
+        showError(`Payment failed (${status}). Please try again.`)
         setLoading(false)
+      },
+      onCancel() {
+        closePanel()
+        setLoading(false)
+      },
+      onError(message) {
+        showError(`Payment error: ${message}`)
       },
     })
   } catch (err) {

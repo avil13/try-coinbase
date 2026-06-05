@@ -354,13 +354,15 @@ code {
   }
 }
 
-#checkout-iframe {
+coinbase-payment {
   width: 100%;
   max-width: 480px;
-  height: min(640px, calc(100vh - 80px));
-  border: none;
   border-radius: 12px;
-  background: #fff;
+  overflow: hidden;
+
+  --cb-color-button-primary: var(--accent);
+  --cb-color-button-primary-hover: var(--accent);
+  --cb-border-radius-button-primary: 8px;
 }
 
 .ticks {
