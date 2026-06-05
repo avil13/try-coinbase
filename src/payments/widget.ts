@@ -1,5 +1,6 @@
-const WIDGET_SCRIPT_URL =
-  'https://payments.coinbase.com/payments/components/v1/payment-link.mjs'
+// const WIDGET_SCRIPT_URL =
+//   'https://payments.coinbase.com/payments/components/v1/payment-link.mjs'
+const WIDGET_SCRIPT_URL = 'https://payments.coinbase.com/sandbox/payments/components/v1/payment-link.mjs'
 
 type PaymentEventDetail = Record<string, unknown>
 
@@ -78,6 +79,8 @@ export async function renderWidget(
       window.location.href = String(e.detail.url)
     }) as EventListener)
   }
+
+  debugger;
 
   el.render({ paymentSessionId })
 }

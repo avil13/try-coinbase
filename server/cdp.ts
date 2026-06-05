@@ -64,8 +64,8 @@ export async function createPaymentSession(
   currency: string,
 ): Promise<PaymentSessionResult> {
   const baseUrl = process.env.CDP_BASE_URL ?? 'https://sandbox.cdp.coinbase.com'
-  const merchantAccountId = loadEnv('CDP_MERCHANT_ACCOUNT_ID')
-  const settlementAsset = (process.env.CDP_SETTLEMENT_ASSET ?? 'usdc').toLowerCase()
+  const targetAddress = loadEnv('CDP_DEPOSIT_ADDR')
+  const targetNetwork = (process.env.CDP_TARGET_NETWORK ?? 'base').toLowerCase()
   const { hostname: requestHost } = new URL(baseUrl)
   const requestPath = '/platform/v2/payment-sessions'
   const url = `${baseUrl}${requestPath}`
@@ -75,7 +75,10 @@ export async function createPaymentSession(
   const body = {
     amount,
     asset: currency.toLowerCase(),
-    target: { accountId: merchantAccountId, asset: settlementAsset },
+    target: {
+      address: targetAddress,
+      network: targetNetwork,
+    },
     autoCapture: true,
   }
 
